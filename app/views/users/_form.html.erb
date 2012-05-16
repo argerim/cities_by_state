@@ -1,0 +1,51 @@
+<%= form_for(@user) do |f| %>
+  <% if @user.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@user.errors.count, "error") %> prohibited this user from being saved:</h2>
+
+      <ul>
+      <% @user.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :name %><br />
+    <%= f.text_field :name %>
+  </div>
+  
+  <div class="field">
+    <%= f.label :state %><br />
+    <%= f.collection_select :state_id, State.all, :id, :name, :selected => @user.city.present? ? @user.city.state_id : @user.state_id, :include_blank => 'SELECT A STATE' %>
+  </div>
+
+  <div class="field">
+    <%= f.label :city %><br />
+      <%= f.collection_select :city_id, cities(@user.city.present? ? @user.city.state_id : @user.state_id), :id, :name, :selected => @user.city_id, :include_blank => @user.city.present? || @user.state_id.present? ? 'SELECT A CITY' : 'SELECT FIRST STATE' %>
+  </div>
+
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>
+
+
+<script type="text/javascript">    
+  $(document).ready(function() {
+   $("#user_state_id").change(function() {
+      getCitiesByState("id="+$("#user_state_id").val());
+    });
+ });
+
+  function getCitiesByState(id) {
+    $.getJSON("/cities_by_state", id, function(j) {
+      var options = '<option value="">SELECT A CITY</option>';
+      $.each(j.cty, function(i, item) {
+        options += '<option value="' + item.id + '">' + item.n + '</option>';
+      });
+      $("#user_city_id").html(options);
+    });
+  }
+</script>
